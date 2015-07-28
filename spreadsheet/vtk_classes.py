@@ -1045,38 +1045,6 @@ class QCDATWidget(QVTKWidget):
                 k[d]=slice(i,None)
         return k
     
-    def updateContents(self, var, cgm):
-        """ Get the vcs canvas, setup the cell's layout, and plot """
-
-        # Set the canvas
-        # if inputPorts[0] is not None:
-        #     self.canvas = inputPorts[0]
-        #self.window = self.canvas
-        #print self.windowId, self.canvas
-            
-        #get reparented window if it's there
-        #if self.windowId in reparentedVCSWindows:
-        #    self.window = reparentedVCSWindows[self.windowId]
-        #    del reparentedVCSWindows[self.windowId]
-        #else:
-        #    print "yes we come here"
-        #    self.window = self.canvas
-        #pass
-            
-        #self.layout().addWidget(self.window)
-        #self.window.setVisible(True)    
-        # Place the mainwindow that the plot will be displayed in, into this
-        # cell widget's layout
-           
-#             except Exception, e:
-#                 print "cgm=",cgm,"args=",args,"kwargs=",kwargs
-#                 spreadsheetWindow.setUpdatesEnabled(True)
-#                 raise e
-
-    #make sure reparented windows stay invisible
-    #for windowId in reparentedVCSWindows:
-    #    reparentedVCSWindows[windowId].setVisible(False)
-        
     def get_graphics_method(self, plotType, gmName):
         method_name = "get"+str(plotType).lower()
         return getattr(self.canvas,method_name)(gmName)

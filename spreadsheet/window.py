@@ -98,9 +98,9 @@ class SpreadsheetWindow(QtGui.QMainWindow):
         # this will cause the spreadsheet to have each cell
         # 550 x 450 size in the server
         #self.resize(1156, 599)
-        # FIXME: test
 
-        self.displayCellEvent(None)
+        # FIXME: remove test
+        self.testPlot()
 
     def get_current_tab_controller(self):
         return self.tabControllerStack.currentWidget()
@@ -388,7 +388,7 @@ class SpreadsheetWindow(QtGui.QMainWindow):
         """
         return QtGui.QMainWindow.event(self, e)
 
-    def displayCellEvent(self, e):
+    def testPlot(self):
         """ displayCellEvent(e: DisplayCellEvent) -> None
         Display a cell when receive this event
 
@@ -413,7 +413,6 @@ class SpreadsheetWindow(QtGui.QMainWindow):
         reference = StandardSheetReference()
         sheet = self.get_current_tab_controller().findSheet(reference)
         cell = sheet.getCell(0,0)
-
         canvas = cell.canvas
 
         # What data to use
@@ -424,9 +423,7 @@ class SpreadsheetWindow(QtGui.QMainWindow):
 
         #widget.updateContents(clt, gmBoxfill)
 
-
-
-
+        # Draw plot on canvas
         canvas.clear()
         cell.extraDimsNames=var.getAxisIds()[:-2]
         cell.extraDimsIndex=[0,]*len(cell.extraDimsNames)
@@ -457,109 +454,6 @@ class SpreadsheetWindow(QtGui.QMainWindow):
         cmd+=")"
 
         canvas.plot(cgm,*args,**kwargs)
-
-        return
-
-
-        self.tabController.addPipeline(e.vistrail)
-        cid = self.tabController.increasePipelineCellId(e.vistrail)
-        pid = self.tabController.getCurrentPipelineId(e.vistrail)
-        if self.tabController.isLoadingMode():
-            locations = self.tabController.getMonitoredLocations((
-                (e.vistrail), pid, cid))
-            for (sheet, row, col) in locations:
-                sheet.tabWidget.setCurrentWidget(sheet)
-                sheet.setCellPipelineInfo(row, col, (e.vistrail, pid, cid))
-                sheet.setCellByType(row, col, e.cellType, e.inputPorts)
-            return None
-        else:
-            reference = e.sheetReference
-            if reference==None:
-                reference = StandardSheetReference()
-            sheet = self.tabController.findSheet(reference)
-            row = e.row
-            col = e.col
-            if row<0 or col<0:
-                (row, col) = sheet.getFreeCell()
-            sheet.tabWidget.setCurrentWidget(sheet)
-            sheet.setCellPipelineInfo(row, col,
-                                      (e.vistrail, pid, cid))
-            if e.rowSpan>=1 or e.colSpan>=1:
-                sheet.setSpan(row, col, e.rowSpan, e.colSpan)
-            if e.inputPorts!=None:
-                sheet.setCellByType(row, col, e.cellType, e.inputPorts)
-            else:
-                sheet.setCellByWidget(row, col, e.cellType)
-            QtCore.QCoreApplication.processEvents()
-            cell = sheet.getCell(row, col)
-            if self.editingModeAction().isChecked():
-                sheet.setCellEditingMode(row, col, True)
-            #If a cell has to dump its contents to a file, it will be in the
-            #extra_info dictionary
-            if cell and e.vistrail.has_key('extra_info'):
-                dump_as_pdf = False
-                extra_info = e.vistrail['extra_info']
-                if extra_info.has_key('pathDumpCells'):
-                    dumppath = extra_info['pathDumpCells']
-                    if extra_info.has_key('nameDumpCells'):
-                        name = extra_info['nameDumpCells']
-                        base_fname = os.path.join(dumppath,
-                                                  name)
-                    else:
-                        locator = e.vistrail['locator']
-                        if locator is not None:
-                            name = e.vistrail['locator'].short_name
-                        else:
-                            name = 'untitled'
-                        version = e.vistrail['version']
-                        if version is None:
-                            version = 0L
-                        base_fname = os.path.join(dumppath,"%s_%s" % \
-                                                  (name, e.vistrail['version']))
-
-                    if configuration.dumpfileType == 'PNG':
-                        dump_as_pdf = False
-                    elif configuration.dumpfileType == 'PDF':
-                        dump_as_pdf = True
-
-                    #extra_info configuration overwrites global configuration
-                    if extra_info.has_key('pdf'):
-                        dump_as_pdf = extra_info['pdf']
-
-                    file_extension = '.png'
-                    if dump_as_pdf == True:
-                        file_extension = '.pdf'
-
-                    # add cell location by default
-                    if not extra_info.has_key('nameDumpCells'):
-                        base_fname = base_fname + "_%d_%d" % (row, col)
-                    # make a unique filename
-                    filename = base_fname + file_extension
-                    counter = 2
-                    while os.path.exists(filename):
-                        filename = base_fname + "_%d%s" % (counter,
-                                                           file_extension)
-                        counter += 1
-                    if not dump_as_pdf:
-                        cell.dumpToFile(filename)
-                    else:
-                        cell.saveToPDF(filename)
-            #if the cell was already selected, then we need to update
-            #the toolbar with this new cell
-            if hasattr(sheet, 'sheet'):
-                if sheet.sheet.activeCell == (row,col):
-                    sheet.sheet.setActiveCell(row,col)
-            return cell
-
-    def batchDisplayCellEvent(self, batchEvent):
-        """ batchDisplayCellEvent(batchEvent: BatchDisplayCellEvent) -> None
-        Handle event where a series of cells are arrived
-
-        """
-        self.tabController.addPipeline(batchEvent.vistrail)
-        for e in batchEvent.displayEvents:
-            e.vistrail = batchEvent.vistrail
-            self.displayCellEvent(e)
 
     def repaintCurrentSheetEvent(self, e):
         """ repaintCurrentSheetEvent(e: RepaintCurrentSheetEvent) -> None
