@@ -99,6 +99,7 @@ class SpreadsheetWindow(QtGui.QMainWindow):
         # 550 x 450 size in the server
         #self.resize(1156, 599)
         # FIXME: test
+
         self.displayCellEvent(None)
 
     def get_current_tab_controller(self):
@@ -392,27 +393,70 @@ class SpreadsheetWindow(QtGui.QMainWindow):
         Display a cell when receive this event
 
         """
-        # TODO Do we need any of this?
         # FIXME: TEST Widget
         #widget = QtGui.QLabel("I am a useless widget!")
 
         # Add widget to spreadsheet
-        reference = StandardSheetReference()
-        sheet = self.get_current_tab_controller().findSheet(reference)
-        (row, col) = sheet.getFreeCell()
-        sheet.tabWidget.setCurrentWidget(sheet)
+        #reference = StandardSheetReference()
+        #sheet = self.get_current_tab_controller().findSheet(reference)
+        #(row, col) = sheet.getFreeCell()
+        #sheet.tabWidget.setCurrentWidget(sheet)
         #sheet.setCellByWidget(row, col, widget)
 
-        from .vtk_classes import QCDATWidget
-        widget = QCDATWidget()
-        sheet.setCellByWidget(row, col, widget)
 
+
+        #from .vtk_classes import QCDATWidget
+        #widget = QCDATWidget()
+        #sheet.setCellByWidget(row, col, widget)
+
+        # Get first cell in active sheet
+        reference = StandardSheetReference()
+        sheet = self.get_current_tab_controller().findSheet(reference)
+        cell = sheet.getCell(0,0)
+
+        canvas = cell.canvas
+
+        # What data to use
         import cdms2, vcs
         cdmsfile = cdms2.open('/usr/local/uvcdat/2.2.0/sample_data/clt.nc')
-        clt = cdmsfile('clt')        
-        gmBoxfill = vcs.getboxfill('default')
+        var = clt = cdmsfile('clt')
+        cgm = gmBoxfill = vcs.getboxfill('default')
 
-        widget.updateContents(clt, gmBoxfill)
+        #widget.updateContents(clt, gmBoxfill)
+
+
+
+
+        canvas.clear()
+        cell.extraDimsNames=var.getAxisIds()[:-2]
+        cell.extraDimsIndex=[0,]*len(cell.extraDimsNames)
+        cell.extraDimsLen=var.shape[:-2]
+        #if hasattr(self.parent(),"toolBar"):
+        #    t = self.parent().toolBar
+        #    if hasattr(t,"dimSelector"):
+        #        while (t.dimSelector.count()>0):
+        #            t.dimSelector.removeItem(0)
+        #        t.dimSelector.addItems(self.extraDimsNames)
+        # Plot
+        cmd = "#Now plotting\nvcs_canvas[%i].plot(" % (canvas.canvasid()-1)
+        k1 = cell.prepExtraDims(var)
+        args = [var(**k1)]
+        cmd+="%s(**%s), " % (args[0].id,str(k1))
+        kwargs = {}
+        file_path = None
+        #for fname in [ var.file, var.filename ]:
+        #    if fname and ( os.path.isfile(fname) or fname.startswith('http://') ):
+        #        file_path = fname
+        #        break
+        #if not file_path and var.url:
+        #    file_path = var.url
+        #if file_path: kwargs['cdmsfile'] =  file_path
+        #record commands
+        for k in kwargs:
+            cmd+=", %s=%s" % (k, repr(kwargs[k]))
+        cmd+=")"
+
+        canvas.plot(cgm,*args,**kwargs)
 
         return
 

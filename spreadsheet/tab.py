@@ -13,6 +13,7 @@
 ##
 ##  - Redistributions of source code must retain the above copyright notice,
 ##    this list of conditions and the following disclaimer.
+##    this list of conditions and the following disclaimer.
 ##  - Redistributions in binary form must reproduce the above copyright
 ##    notice, this list of conditions and the following disclaimer in the
 ##    documentation and/or other materials provided with the distribution.
@@ -52,6 +53,7 @@ from PySide import QtCore, QtGui
 from .sheet import StandardWidgetSheet
 from .cell import QCellPresenter, QCellContainer, QCellToolBar
 from . import spreadsheet_rc
+from .vtk_classes import QCDATWidget
 
 
 class SizeSpinBox(QtGui.QSpinBox):
@@ -605,6 +607,37 @@ class StandardWidgetSheetTab(QtGui.QWidget, StandardWidgetSheetTabInterface):
         self.setLayout(self.vLayout)
         self.pipelineInfo = {}
         self.setAcceptDrops(True)
+        self.createContainers()
+
+    def createContainers(self):
+        row_count, col_count = self.getDimension()
+        for r in xrange(row_count):
+            for c in xrange(col_count):
+                w = self.getCellWidget(r, c)
+                if w is None:
+                    widget = QCDATWidget()
+                    cellWidget = QCellContainer(widget)
+                    self.setCellByWidget(r, c, cellWidget)
+                    # create canvas after widgets parent has been set
+                    widget.createCanvas()
+
+    def removeContainers(self, new_rows=None, new_cols=None):
+        if new_rows is not None and new_cols is not None:
+            self.removeContainers(new_rows=new_rows)
+            self.removeContainers(new_cols=new_cols)
+            return
+        elif new_rows is not None:
+            rows = xrange(new_rows, self.sheet.rowCount())
+            cols = xrange(self.sheet.columnCount())
+        elif new_cols is not None:
+            rows = xrange(self.sheet.rowCount())
+            cols = xrange(new_cols, self.sheet.columnCount())
+        else:
+            rows = xrange(self.sheet.rowCount())
+            cols = xrange(self.sheet.columnCount())
+        for row in rows:
+            for col in cols:
+                self.setCellByWidget(row, col, None)
 
     def rowSpinBoxChanged(self):
         """ rowSpinBoxChanged() -> None
@@ -612,8 +645,10 @@ class StandardWidgetSheetTab(QtGui.QWidget, StandardWidgetSheetTabInterface):
 
         """
         if self.toolBar.rowSpinBox.value()!=self.sheet.rowCount():
+            self.removeContainers(new_rows=self.toolBar.rowSpinBox.value())
             self.sheet.setRowCount(self.toolBar.rowSpinBox.value())
             self.sheet.stretchCells()
+            self.createContainers()
             self.setEditingMode(self.tabWidget.editingMode)
 
     def colSpinBoxChanged(self):
@@ -622,8 +657,10 @@ class StandardWidgetSheetTab(QtGui.QWidget, StandardWidgetSheetTabInterface):
 
         """
         if self.toolBar.colSpinBox.value()!=self.sheet.columnCount():
+            self.removeContainers(new_cols=self.toolBar.colSpinBox.value())
             self.sheet.setColumnCount(self.toolBar.colSpinBox.value())
             self.sheet.stretchCells()
+            self.createContainers()
             self.setEditingMode(self.tabWidget.editingMode)
 
     ### Belows are API Wrappers to connect to self.sheet

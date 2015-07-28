@@ -1046,15 +1046,12 @@ class QCDATWidget(QVTKWidget):
         return k
     
     def updateContents(self, var, cgm):
-        """ Get the vcs canvas, setup the cell's layout, and plot """      
-        self.createCanvas()
+        """ Get the vcs canvas, setup the cell's layout, and plot """
 
         # Set the canvas
         # if inputPorts[0] is not None:
         #     self.canvas = inputPorts[0]
         #self.window = self.canvas
-        if self.canvas is None:
-            self.createCanvas()
         #print self.windowId, self.canvas
             
         #get reparented window if it's there
@@ -1071,41 +1068,10 @@ class QCDATWidget(QVTKWidget):
         # Place the mainwindow that the plot will be displayed in, into this
         # cell widget's layout
            
-        self.canvas.clear()
-        self.extraDimsNames=var.getAxisIds()[:-2]
-        self.extraDimsIndex=[0,]*len(self.extraDimsNames)
-        self.extraDimsLen=var.shape[:-2]
-        #if hasattr(self.parent(),"toolBar"):
-        #    t = self.parent().toolBar
-        #    if hasattr(t,"dimSelector"):
-        #        while (t.dimSelector.count()>0):
-        #            t.dimSelector.removeItem(0)
-        #        t.dimSelector.addItems(self.extraDimsNames)
-        # Plot
-        cmd = "#Now plotting\nvcs_canvas[%i].plot(" % (self.canvas.canvasid()-1)
-        k1 = self.prepExtraDims(var)
-        args = [var(**k1)]
-        cmd+="%s(**%s), " % (args[0].id,str(k1))
-        kwargs = {}
-        file_path = None
-        #for fname in [ var.file, var.filename ]:
-        #    if fname and ( os.path.isfile(fname) or fname.startswith('http://') ):
-        #        file_path = fname
-        #        break
-        #if not file_path and var.url:
-        #    file_path = var.url
-        #if file_path: kwargs['cdmsfile'] =  file_path
-        #record commands
-        for k in kwargs:
-            cmd+=", %s=%s" % (k, repr(kwargs[k]))
-        cmd+=")"
-
-        self.canvas.plot(cgm,*args,**kwargs)
 #             except Exception, e:
 #                 print "cgm=",cgm,"args=",args,"kwargs=",kwargs
 #                 spreadsheetWindow.setUpdatesEnabled(True)
 #                 raise e
-        self.update()
 
     #make sure reparented windows stay invisible
     #for windowId in reparentedVCSWindows:
