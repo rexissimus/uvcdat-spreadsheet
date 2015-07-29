@@ -40,14 +40,12 @@
 from __future__ import division
 
 import ctypes
-import os.path
 from PySide import QtCore, QtGui
 import tempfile
 
 from .base import StandardSheetReference
 from .cell import QCellContainer
 from .sheet import StandardWidgetSheet
-from .tabcontroller import StandardWidgetTabController
 from .tabcontroller_stack import TabControllerStack
 
 
@@ -409,13 +407,17 @@ class SpreadsheetWindow(QtGui.QMainWindow):
         #widget = QCDATWidget()
         #sheet.setCellByWidget(row, col, widget)
 
+        # Example getting canvas for first cell in current spreadsheet
+        canvas = self.getCanvas(0,0)
+
+        # Example uses the corresponding cel widget
+        # this shoud not be neccecary if storing this info externally
         # Get first cell in active sheet
         reference = StandardSheetReference()
         sheet = self.get_current_tab_controller().findSheet(reference)
         cell = sheet.getCell(0,0)
-        canvas = cell.canvas
 
-        # What data to use
+        # Set up data and plot
         import cdms2, vcs
         cdmsfile = cdms2.open('/usr/local/uvcdat/2.2.0/sample_data/clt.nc')
         var = clt = cdmsfile('clt')
@@ -557,3 +559,9 @@ class SpreadsheetWindow(QtGui.QMainWindow):
     def getTabController(self, name):
         return self.tabControllerStack.get_tab_controller_by_name(name)
 
+    def getCanvas(self, row=0, col=0):
+        # return canvas for specified position in current sheet
+        reference = StandardSheetReference()
+        sheet = self.get_current_tab_controller().findSheet(reference)
+        cell = sheet.getCell(row, col)
+        return cell.canvas
