@@ -565,3 +565,9 @@ class SpreadsheetWindow(QtGui.QMainWindow):
         sheet = self.get_current_tab_controller().findSheet(reference)
         cell = sheet.getCell(row, col)
         return cell.canvas
+
+    def getSelectedLocations(self):
+        # return canvas for specified position in current sheet
+        reference = StandardSheetReference()
+        sheet = self.get_current_tab_controller().findSheet(reference)
+        return sheet.getSelectedLocations()

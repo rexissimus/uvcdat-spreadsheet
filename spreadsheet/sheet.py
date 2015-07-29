@@ -527,7 +527,7 @@ class StandardWidgetSheet(QtGui.QTableWidget):
         if cellWidget:
             self.delegate.updateEditorGeometry(cellWidget, None, index)
 
-    def selectCell(self, row, col, toggling):
+    def selectCell(self, row, col, toggling=True):
         """ selectCell(row: int, col: int, toggling: bool) -> None
         Select a cell based on its current selection
 
@@ -556,8 +556,8 @@ class StandardWidgetSheet(QtGui.QTableWidget):
         """
         self.activeCell = (row, col)
         toolBar = self.parent().getCellToolBar(row, col)
-        if toolBar:
-            toolBar.snapTo(row, col)
+        #if toolBar:
+        #    toolBar.snapTo(row, col)
         self.parent().toolBar.setCellToolBar(toolBar)
 
     def adjustWidgetGeometry(self, row, col):
