@@ -373,9 +373,8 @@ class SpreadsheetWindow(QtGui.QMainWindow):
                 p = p.parent()
             if p and isinstance(p, StandardWidgetSheet) and not p.isModal():
                 pos = p.viewport().mapFromGlobal(e.globalPos())
-                p.emit(QtCore.SIGNAL('cellActivated(int, int, bool)'),
-                       p.rowAt(pos.y()), p.columnAt(pos.x()),
-                       e.modifiers()==QtCore.Qt.ControlModifier)
+                p.activateCell.emit(p.rowAt(pos.y()), p.columnAt(pos.x()),
+                                     e.modifiers()==QtCore.Qt.ControlModifier)
         return False
         #return QtGui.QMainWindow.eventFilter(self,q,e)
 

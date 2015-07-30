@@ -250,6 +250,9 @@ class StandardWidgetSheet(QtGui.QTableWidget):
     VTK sheet need to be derived from this one
 
     """
+
+    activateCell = QtCore.Signal(int, int, bool)
+
     def __init__(self, rows=0, cols=0, parent=None):
         """ StandardWidgetSheet(rows: int, cols: int, parent: QWidget)
                                 -> StandardWidgetSheet
@@ -284,6 +287,7 @@ class StandardWidgetSheet(QtGui.QTableWidget):
         self.setColumnCount(cols)
         self.setFitToWindow(True)
         self.cellActivated.connect(self.selectCell)
+        self.activateCell.connect(self.selectCell)
         self.activeCell = (-1,-1)
 
     def forceColumnMultiSelect(self, logicalIndex):
@@ -527,6 +531,8 @@ class StandardWidgetSheet(QtGui.QTableWidget):
         if cellWidget:
             self.delegate.updateEditorGeometry(cellWidget, None, index)
 
+    @QtCore.Slot(int, int)
+    @QtCore.Slot(int, int, bool)
     def selectCell(self, row, col, toggling=True):
         """ selectCell(row: int, col: int, toggling: bool) -> None
         Select a cell based on its current selection
